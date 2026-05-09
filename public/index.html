@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YouTube 自动评论 · 半自动管道</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <!-- 初始设置向导（needs_setup 时全屏盖住主界面） -->
+  <div id="setup-overlay" class="setup-overlay hidden">
+    <div class="setup-card">
+      <h1>初始设置</h1>
+      <p class="setup-intro">第一次跑这个项目？跟着做下面 2 步就能用了。卡在哪一步看
+        <a href="https://github.com/liuyika3/auto-ytb-comment/blob/main/AGENTS.md" target="_blank" rel="noopener">AGENTS.md</a>。</p>
+
+      <!-- Step 1: 凭据 -->
+      <section class="setup-step" id="setup-step1">
+        <div class="setup-step-head">
+          <span class="step-num">1</span>
+          <h2>填三个凭据</h2>
+          <span class="step-status" id="step1-status"></span>
+        </div>
+        <div class="setup-step-body" id="step1-body">
+          <p class="note">所有字段只存到本机的 <code>config/local.json</code>（git 忽略），不发给我们，不进仓。</p>
+          <label>Gemini API Key
+            <input id="setup-gemini" type="password" autocomplete="off" placeholder="AIza..." />
+            <span class="hint">在 <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> 免费申请</span>
+          </label>
+          <label>YouTube OAuth Client ID
+            <input id="setup-oauth-id" type="text" autocomplete="off" placeholder="xxxxx.apps.googleusercontent.com" />
+          </label>
+          <label>YouTube OAuth Client Secret
+            <input id="setup-oauth-secret" type="password" autocomplete="off" placeholder="GOCSPX-..." />
+            <span class="hint">在 GCP 控制台 → 凭据 → 创建「桌面应用」类型的 OAuth 客户端 ID 后拿到</span>
+          </label>
+          <div class="setup-actions">
+            <button id="btn-save-config" class="btn-primary">保存凭据</button>
+            <span id="setup-save-status" class="meta"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 2: OAuth -->
+      <section class="setup-step" id="setup-step2">
+        <div class="setup-step-head">
+          <span class="step-num">2</span>
+          <h2>登录 YouTube 账号</h2>
+          <span class="step-status" id="step2-status"></span>
+        </div>
+        <div class="setup-step-body" id="step2-body">
+          <p class="note">点下面按钮会跳转到 Google 登录页。授权完成后浏览器会自动跳回这里，token 存到本机
+            <code>credentials/token.json</code>（git 忽略）。</p>
+          <p class="note warn">⚠️ 你的 Gmail 必须先被加进 GCP 同意屏幕的「测试用户」名单，否则 Google 会直接拒。</p>
+          <div class="setup-actions">
+            <button id="btn-oauth-go" class="btn-primary" disabled>跳转 Google 登录</button>
+            <span id="setup-oauth-status" class="meta"></span>
+          </div>
+        </div>
+      </section>
+
+      <details class="setup-advanced">
+        <summary>不想用向导？</summary>
+        <p class="note">把 <code>YOUTUBE_OAUTH_CLIENT_ID</code> / <code>YOUTUBE_OAUTH_CLIENT_SECRET</code> /
+          <code>GEMINI_API_KEY</code> 写到 <code>.env</code>（参考 <code>env.example</code>），然后
+          <code>npm run oauth</code> 走 CLI 流程。重启 server。</p>
+      </details>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">▷ youtube-auto-comment</div>
+    <nav class="tabs">
+      <button class="tab" data-tab="search">① 搜索</button>
+      <button class="tab" data-tab="drafts">② 草稿</button>
+      <button class="tab" data-tab="wall">③ 成果墙</button>
+      <button class="tab" data-tab="config">④ 配置</button>
+    </nav>
+    <div id="quota-pill" class="pill pill-warn" title="今日 YouTube 配额（PT 时区）">配额加载中…</div>
+    <div id="health-pill" class="pill pill-warn">健康检查中…</div>
+  </header>
+
+  <main>
+    <!-- ① 搜索 -->
+    <section id="tab-search" class="panel">
+      <div class="card">
+        <h2>关键词筛选</h2>
+        <div class="form-row">
+          <label>关键词
+            <input id="q-input" type="text" placeholder="例：长期主义 投资" />
+          </label>
+          <label>排序
+            <select id="q-order">
+              <option value="relevance">相关度</option>
+              <option value="viewCount">播放量</option>
+              <option value="date">最新</option>
+              <option value="rating">评分</option>
+            </select>
+          </label>
+          <label>条数
+            <input id="q-max" type="number" min="1" max="50" value="25" />
+          </label>
+        </div>
+        <div class="form-row">
+          <label class="slider-label">粉丝下限：<span id="q-sub-display">10万</span>
+            <input id="q-sub" type="range" min="0" max="1000" value="100" />
+          </label>
+          <label class="slider-label">时长下限：<span id="q-dur-display">10 分</span>
+            <input id="q-dur" type="range" min="0" max="60" value="10" />
+          </label>
+          <button id="btn-search" class="btn-primary">开始筛</button>
+        </div>
+        <div id="search-meta" class="meta"></div>
+      </div>
+
+      <div class="card">
+        <h2>命中视频</h2>
+        <div id="search-results" class="result-grid"></div>
+      </div>
+    </section>
+
+    <!-- ② 草稿 -->
+    <section id="tab-drafts" class="panel hidden">
+      <div class="card">
+        <div class="card-head">
+          <h2>待发送草稿</h2>
+          <button id="btn-refresh-drafts" class="btn-ghost">刷新列表</button>
+        </div>
+        <div id="drafts-list" class="draft-list"></div>
+      </div>
+    </section>
+
+    <!-- ③ 成果墙 -->
+    <section id="tab-wall" class="panel hidden">
+      <div class="card">
+        <div class="card-head">
+          <h2>已发评论 · 走马灯</h2>
+          <div class="actions">
+            <button id="btn-refresh-stats" class="btn-ghost">手动刷新统计（&lt;3 天）</button>
+            <button id="btn-toggle-carousel" class="btn-ghost">暂停 / 播放</button>
+          </div>
+        </div>
+        <div id="carousel" class="carousel"></div>
+      </div>
+    </section>
+
+    <!-- ④ 配置 -->
+    <section id="tab-config" class="panel hidden">
+      <div class="card">
+        <div class="card-head">
+          <h2>今日配额（PT 时区）</h2>
+          <button id="btn-refresh-quota" class="btn-ghost">刷新</button>
+        </div>
+        <div id="quota-bar-wrap">
+          <div class="quota-row">
+            <span id="quota-used">— / —</span>
+            <span id="quota-pct" class="meta">—</span>
+            <span id="quota-date" class="meta"></span>
+          </div>
+          <div class="quota-bar"><div id="quota-bar-fill"></div></div>
+          <div id="quota-by-op" class="quota-ops"></div>
+          <p class="note">配额帽 (cap) 在 <code>.env</code> 里改 <code>YOUTUBE_DAILY_QUOTA_CAP</code>（默认 9500，硬上限 10000）。
+            超过帽子时所有 YouTube API 调用前都会被拒（HTTP 429），不会真正打到 Google。</p>
+        </div>
+      </div>
+      <div class="card">
+        <h2>账号 / 凭据</h2>
+        <div id="config-summary" class="kv-block">加载中…</div>
+        <div class="setup-actions" style="margin-top:10px">
+          <button id="btn-show-wizard" class="btn-ghost">改 Gemini key / OAuth 凭据</button>
+          <button id="btn-relogin" class="btn-ghost">重新登录 YouTube 账号</button>
+          <button id="btn-reset-all" class="btn-danger">完全重置（清 token + 凭据）</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>系统状态</h2>
+        <pre id="health-dump" class="kv-block">…</pre>
+      </div>
+      <div class="card warn">
+        <h3>合规风险（请阅读）</h3>
+        <p>批量自动发评论（哪怕评论由 LLM 生成）撞 YouTube ToS 的「自动化/反垃圾」条款。
+           Google 自动反垃圾系统可能将整条评论自动隐藏，或对账号施加限速、降权乃至永久封禁。
+           本工具采用「半自动」流程：管道生成候选 → 你逐条点发送，但**最终发送行为仍由本工具用 OAuth token 调用 commentThreads.insert 完成**，
+           归责仍在使用者。请评估业务必要性、量级与频次。</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

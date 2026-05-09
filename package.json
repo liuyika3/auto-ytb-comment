@@ -1,0 +1,28 @@
+{
+  "name": "auto-ytb-comment",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "description": "YouTube Data API v3: OAuth + auto-comment pipeline (search → Gemini summary → semi-auto post → readback)",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/liuyika3/auto-ytb-comment.git"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "oauth": "node oauth-login.mjs",
+    "smoke": "node smoke-test.mjs",
+    "diag": "node scripts/diag-google.mjs",
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "@google/genai": "^1.0.0",
+    "express": "^4.21.1",
+    "node-sqlite3-wasm": "^0.8.30",
+    "googleapis": "^144.0.0",
+    "https-proxy-agent": "^7.0.6",
+    "undici": "^6.21.0"
+  }
+}
