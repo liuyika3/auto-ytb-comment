@@ -1,150 +1,152 @@
 # AGENTS.md — Setup guide for AI coding agents
 
 This file is for **AI coding agents** (Claude Code, Codex, Cursor agents, etc.)
-that are helping a human user deploy this project on their own machine.
+helping a human user deploy this project on their own machine. The repo
+ships with **no secrets** — the user brings their own GCP OAuth client and
+Gemini key, and pastes them into a web wizard at first launch.
 
-## What this project is (one paragraph)
+## What this project does
 
-A Node.js Express server + SPA frontend that:
-1. Searches YouTube via official Data API v3 with subscriber/duration filters
-2. Generates a "course-rep style" comment with Gemini (no external links)
-3. Lets the human review + post the comment **one at a time** to YouTube
-4. Reads back like-count / reply-count, displays a carousel of posted comments
+A local Node.js + Express + SPA frontend that:
+1. Searches YouTube via Data API v3 (subscriber / duration filters)
+2. Generates a "course-rep" Chinese comment with Gemini (no external links)
+3. Lets the human review + post each comment one at a time
+4. Reads back like-count / reply-count, displays in a carousel
 
-OAuth scope is `youtube.force-ssl` (read + post comments). The repo ships with
-the OAuth client_id/secret pre-filled in `env.example`. Each end user must
-still go through their own browser-based OAuth consent to get their own
-`token.json`.
+OAuth scopes used: `youtube.readonly` + `youtube.force-ssl`.
 
-## Hard requirements before you start
+## Hard requirements
 
 - **Node.js ≥ 20** (`node --version`)
-- **A modern browser** (Chrome/Edge/Firefox) — needed for OAuth consent
-- **A Gmail address that has been added as a test user** in this project's GCP
-  consent screen by the repo owner. Without this, OAuth will fail with
-  "Access blocked: this app's access is restricted." The repo owner is
-  liuyika3 — ask them to add the user's Gmail before you proceed.
-- **A Gemini API key** — the user must have one ready, or know where to get
-  it: https://aistudio.google.com/apikey (free tier is sufficient).
-- **Network access to Google APIs.** If the user is in Mainland China, they
-  need a working HTTP proxy (Clash / v2ray / Shadowsocks) on `127.0.0.1`.
+- **A modern browser** for the in-server wizard + Google consent
+- **The user's own GCP project** with YouTube Data API v3 + their own Desktop
+  OAuth client (see § "Google Cloud setup" below — walk the user through it)
+- **A Gemini API key** (free at https://aistudio.google.com/apikey)
+- **Network access to Google APIs.** China users typically need an HTTP
+  proxy on `127.0.0.1` (Clash 7890 / v2rayN 10809 / etc.)
 
 ## Setup script (execute in order)
 
-### Step 1 — Clone
+### Step 1 — Clone & install
 
 ```bash
 git clone git@github.com:liuyika3/auto-ytb-comment.git
+# HTTPS fallback: git clone https://github.com/liuyika3/auto-ytb-comment.git
 cd auto-ytb-comment
-```
-
-If SSH is unavailable use HTTPS:
-```bash
-git clone https://github.com/liuyika3/auto-ytb-comment.git
-```
-
-### Step 2 — Install dependencies
-
-```bash
 npm install
 ```
 
-Expected: ~80 MB of `node_modules`, no errors. If `node-sqlite3-wasm` fails,
-ensure Node ≥ 20 (older versions don't have the required WASM APIs).
+Expect ~80 MB of `node_modules`. If `node-sqlite3-wasm` fails, confirm Node
+≥ 20.
 
-### Step 3 — Create `.env` from template
+### Step 2 — Google Cloud setup (HUMAN, ~5 min)
 
-```bash
-cp env.example .env
-```
+Walk the user through this. They need a Gmail account with YouTube channel access.
 
-(Windows cmd: `copy env.example .env`. PowerShell: `Copy-Item env.example .env`.)
+1. Open https://console.cloud.google.com → top-bar project dropdown →
+   **New project** → name e.g. `auto-ytb-comment` → Create → switch to it.
 
-Then **edit `.env`** and set exactly one value:
+2. **Enable the API.** Left menu → APIs & Services → Library → search
+   "YouTube Data API v3" → click → **Enable**.
 
-```
-GEMINI_API_KEY=<the user's Gemini key>
-```
+3. **OAuth consent screen.** Left menu → APIs & Services → OAuth consent
+   screen.
+   - User type: **External**
+   - App name: anything (e.g. `auto-ytb-comment`)
+   - User support email + Developer contact: the user's Gmail
+   - **Scopes step**: click "Add or remove scopes" → search `youtube` →
+     check `https://www.googleapis.com/auth/youtube.force-ssl` → Update
+   - **Test users**: add the user's own Gmail (and any teammate emails).
+   - Save and continue.
 
-Do **not** edit `YOUTUBE_OAUTH_CLIENT_ID` or `YOUTUBE_OAUTH_CLIENT_SECRET` —
-they are pre-filled and shared across users. If the user is in China and
-network calls to Google fail, also uncomment and adjust `HTTPS_PROXY` /
-`HTTP_PROXY` to match their local proxy port (commonly 7890 for Clash).
+4. **Create the OAuth client.** Left menu → APIs & Services → Credentials →
+   **+ Create credentials** → **OAuth client ID**.
+   - Application type: ⚠️ **Desktop app** (not Web — Desktop allows loopback
+     redirects without registration).
+   - Name: anything.
+   - Click Create. A modal shows **Client ID** and **Client secret** — copy
+     both. (Also downloadable as JSON.)
 
-### Step 4 — Browser OAuth (REQUIRES HUMAN INTERACTION)
+5. **Get a Gemini key** at https://aistudio.google.com/apikey → "Create API
+   key" → copy.
 
-```bash
-npm run oauth
-```
+The user should now have 3 strings: gemini_key, oauth_client_id,
+oauth_client_secret.
 
-What happens:
-1. The script prints a Google consent URL and starts a local listener on
-   `http://localhost:8765/oauth2callback`.
-2. The script opens (or prints) the URL. **The human user** must:
-   - Open the URL in a browser
-   - Sign in with the Gmail that was added as a test user
-   - On the consent screen, **check ALL requested scopes**, especially
-     "Manage your YouTube account" (this is `youtube.force-ssl`)
-   - Click "Continue"
-3. The browser redirects to localhost; the script writes
-   `credentials/token.json` and prints "授权成功".
-
-**You (the agent) cannot do step 2 yourself.** Tell the user clearly that they
-must click through the browser, then wait for them to confirm.
-
-Common failures:
-- `redirect_uri_mismatch` — GCP OAuth client must whitelist
-  `http://localhost:8765/oauth2callback`. The repo owner manages this.
-- `Access blocked: ... not verified / restricted` — the user's Gmail isn't on
-  the test users list. Ask the repo owner to add it.
-- `ETIMEDOUT` to googleapis.com — set `HTTPS_PROXY` and retry.
-
-### Step 5 — Smoke test
-
-```bash
-npm run smoke
-```
-
-Expected: prints the user's YouTube channel info (id, title, subscriberCount).
-Costs 1 quota unit. If this works, OAuth + scope are correct.
-
-### Step 6 — Start the server
+### Step 3 — Start the server
 
 ```bash
 npm run start
+# or on Windows: double-click run-server.bat
 ```
 
 Expected log:
 ```
+[setup] 还没完成初始设置；打开 http://127.0.0.1:8766/ 走向导
 youtube-auto-comment running → http://127.0.0.1:8766
 [quota] 今日 (PT YYYY-MM-DD) 已用 0 / 9500（剩 9500）
 ```
 
-Open `http://127.0.0.1:8766/` in the browser. The pill in the top-right should
-say **"就绪 · 可发评"** (ready, can post). If it says "缺写权限" (missing
-write permission) the OAuth scope didn't include `youtube.force-ssl` — go
-back to step 4 and re-consent.
+### Step 4 — In-browser wizard (HUMAN INTERACTION)
 
-On Windows you can also double-click `run-server.bat`.
+The user opens **http://127.0.0.1:8766/**. The setup overlay shows.
 
-## How to verify everything works (end-to-end test)
+**Step 1 of the overlay**: paste the 3 values from § Step 2, click "保存凭据".
 
-1. Tab ① 搜索: type a keyword (e.g. "投资"), set sub_min=10000, dur_min=600s,
-   click 开始筛. You should see video cards.
-2. Tab ① click "生成「课代表」评论" on one card. Wait ~5–10 s for Gemini.
-3. Tab ② 草稿: the draft appears with the generated text.
-4. **DO NOT** click "发送" unless the user wants to post a real comment to
-   YouTube. It is irreversible and consumes 50 quota units.
-5. Tab ④ 配置: confirm the quota panel shows the units consumed by step 1
-   (~102 units for one search) and step 2 (~50–250 for the draft).
+**Step 2 of the overlay**: click "跳转 Google 登录". The browser navigates
+to Google's consent page. The user must:
+- Sign in with the Gmail they added as a test user
+- See "Google hasn't verified this app" warning → click Advanced → Continue
+- Check **all** requested scopes (especially "Manage your YouTube account"
+  — this is `youtube.force-ssl`)
+- Click Continue
 
-## Quota cap (important — you cannot exceed this)
+The browser auto-redirects back to `http://127.0.0.1:8766/oauth2callback?...`,
+which is handled by **the same server**, exchanges the code for a token,
+saves it to `credentials/token.json`, and redirects to `/?setup=ok`. The
+overlay disappears, the main UI shows.
 
-Default cap is **9500 units / day**, hard limit **10000** (Google's). When the
-running total hits the cap, every YouTube API call returns HTTP 429 before
-hitting Google. Reset is at midnight Pacific Time.
+**You (the agent) cannot click through that browser flow.** Pause and tell
+the user to do it, then wait for them to say "done" or for the overlay to
+disappear.
 
-Per-call cost (committed in `lib/quota.mjs`):
+Common failures here:
+| Symptom | Cause | Fix |
+|---|---|---|
+| "Access blocked: app not verified" / "Access blocked: this app is restricted" | user's Gmail isn't a test user | go back to Step 2.3, add the email |
+| `redirect_uri_mismatch` | OAuth client type was set to **Web app** instead of **Desktop app** in Step 2.4 | recreate as Desktop app |
+| `ETIMEDOUT` to oauth2.googleapis.com | Node can't reach Google directly | set `HTTPS_PROXY=http://127.0.0.1:<proxy_port>` in `.env` and restart |
+| Wizard's "保存凭据" returns 500 | `config/local.json` directory not writable | check permissions on `config/` |
+| Wizard already shows "已保存" but you want to change values | click "改 Gemini key / OAuth 凭据" in ④配置 tab to reset |
+
+### Step 5 — Verify it works
+
+1. Tab ① 搜索 → type a keyword (e.g. "投资"), set sub_min=10000,
+   dur_min=600 → click 开始筛 → video cards should appear.
+2. Tab ① click "生成「课代表」评论" on a card → wait ~5–10 s → success.
+3. Tab ② 草稿 → the draft is here, editable.
+4. Tab ④ 配置 → quota panel should show ~352 units used (100 search +
+   1 videos + 1 channels + 250 captions+download).
+5. **DO NOT** click 发送 unless the user wants to post a real comment.
+   It's irreversible (you can delete from YouTube manually, but reputation
+   risk + 50 quota burn already happened).
+
+## Files the agent should care about
+
+- `lib/runtime-config.mjs` — read/write `config/local.json` (the wizard's data)
+- `paths.mjs` — OAuth credential resolution chain: runtime-config → env →
+  client_secret JSON
+- `lib/youtube-auth.mjs` — async `getYoutube()` returns a freshly-built client
+  every call, so wizard updates take effect without restart
+- `lib/quota.mjs` — daily cap, PT-day-keyed, default 9500
+- `server.mjs` — routes including `/api/setup/*` and `/oauth2callback`
+- `public/app.js` — wizard logic; renders based on `/api/setup/status`
+
+## Quota cap (cannot exceed)
+
+Default 9500 units/day, hard limit 10000. When over, every YouTube API
+call returns HTTP 429 before hitting Google. Reset midnight Pacific Time.
+
 | op | cost |
 |---|---|
 | `search.list` | 100 |
@@ -154,38 +156,25 @@ Per-call cost (committed in `lib/quota.mjs`):
 | `commentThreads.insert` | 50 |
 | `commentThreads.list` | 1 |
 
-Rough budget: 1 search + 25 drafts + 25 posts ≈ 7600 units.
+Budget rule of thumb: 1 search + 25 drafts + 25 posts ≈ 7600.
 
-## Common errors during steps above
+## Things you should NOT do as an agent
 
-| Error | Cause | Fix |
-|---|---|---|
-| `database is locked` on startup | stale `data.db.lock/` from a crashed previous run | `rm -r data.db.lock/` (it's a directory, not a file) |
-| `ETIMEDOUT` reaching Google | Node not using the OS proxy | set `HTTPS_PROXY` in `.env` |
-| `invalid_grant` | OAuth client_secret rotated, or refresh_token revoked | re-run `npm run oauth` |
-| `quotaExceeded` from Google directly | the local cap is set above 10000 or this user has been throttled | reset cap to ≤ 10000, wait until PT midnight |
-| `Access blocked: app not verified` | Gmail isn't a test user in the GCP consent screen | ask the repo owner |
-
-## Files you may need to inspect
-
-- `server.mjs` — Express routes, error handling, shutdown hooks
-- `lib/quota.mjs` — quota accounting (PT-day-keyed, SQLite-backed)
-- `lib/db.mjs` — schema + DAL
-- `lib/search.mjs`, `lib/captions.mjs`, `lib/comments.mjs` — API call sites
-- `oauth-login.mjs` — OAuth flow (also defines the SCOPES list)
-- `paths.mjs` — `.env` loader, OAuth credential resolution
-
-## What you should NOT touch
-
-- `credentials/token.json` — bound to the user's account; never commit, never
-  share between machines without re-doing oauth
-- `data.db` and `data.db.lock/` — runtime state; never commit
-- `.env` — has the user's Gemini key; never commit, never log
+- Do **not** commit `.env`, `credentials/token.json`, `config/local.json`,
+  `data.db`. All are in `.gitignore` already.
+- Do **not** copy a token.json from one machine to another. It's bound to
+  one Google account; sharing = giving someone else write access to that
+  YouTube account.
+- Do **not** click "发送" on a draft on behalf of the user without explicit
+  confirmation. It's a real, public, irreversible YouTube comment.
+- Do **not** raise `YOUTUBE_DAILY_QUOTA_CAP` above 10000. Google's hard
+  limit is 10000; setting higher just means you'll hit Google's quota
+  errors instead of our soft cap.
 
 ## Repo conventions
 
-- ES modules only (`"type": "module"` in `package.json`).
-- No TypeScript, no build step. Direct `node` execution.
-- New files go under `lib/` for backend, `public/` for frontend assets.
-- The frontend is plain HTML + vanilla JS, no bundler. Edit
-  `public/index.html`, `public/app.js`, `public/style.css` directly.
+- ES modules only (`"type": "module"`). No build step.
+- Backend in `server.mjs` + `lib/*.mjs`.
+- Frontend in `public/` — plain HTML + vanilla JS, no bundler.
+- New routes: add to `server.mjs` (express router style).
+- New library helpers: drop in `lib/`.

@@ -19,43 +19,47 @@ YouTube 半自动评论流水线（本机运行）：
 
 ## 快速开始（≤ 10 分钟）
 
-> **配套了 [`AGENTS.md`](./AGENTS.md)**，可以让 Claude Code / Codex
-> 等 AI 编程代理逐步引导你完成。先把 Gemini key 准备好，把
-> AGENTS.md 喂给你的 agent，让它带着你跑就行。
+> **配套了 [`AGENTS.md`](./AGENTS.md)**：把它喂给 Claude Code / Codex
+> 让 AI 代理一步步带你做（包括去 GCP 拿凭据那一段）。
 
-人工版步骤：
+3 步：
 
 ```bash
 git clone git@github.com:liuyika3/auto-ytb-comment.git
 cd auto-ytb-comment
-
 npm install                 # ~80MB，要 Node ≥ 20
-cp env.example .env         # Windows: copy env.example .env
-
-# 编辑 .env，把 GEMINI_API_KEY=<你的 key> 填进去
-# Gemini key 在 https://aistudio.google.com/apikey 免费申请
-
-npm run oauth               # 浏览器登录 Google，授权 YouTube
-                            # → 必须用「已被加为测试用户」的 Gmail
-npm run smoke               # 验证：会打印你的频道信息
-
 npm run start               # 启动服务器
-                            # 浏览器打开 http://127.0.0.1:8766
 ```
 
-Windows 用户可以直接双击 `run-oauth.bat` / `run-smoke.bat` /
-`run-server.bat`，里面已经替你设了 HTTP 代理。
+打开 **http://127.0.0.1:8766/** ——第一次进会看到一个**初始设置向导**，
+3 个输入框：
+
+```
+1. Gemini API Key           ← https://aistudio.google.com/apikey
+2. YouTube OAuth Client ID  ← 自建 GCP 项目得到（看 AGENTS.md 第 ① 节）
+3. YouTube OAuth Client Secret
+```
+
+填完点「保存凭据」→ 再点「跳转 Google 登录」→ 浏览器去 Google 授权 →
+自动跳回主界面。完。
+
+凭据存到本机 `config/local.json`（git 忽略）和 `credentials/token.json`，
+**不会**进仓也不会发给任何人。
 
 ---
 
-## 同事接入清单（找 liuyika3 做这两件事）
+## 没法上网 / 想走 CLI 流程
 
-1. 把你的 Gmail 加进 GCP OAuth 同意屏幕的「测试用户」名单
-2. 给你 GCP 控制台里 OAuth 客户端的 redirect URI 一致性确认（默认
-   `http://localhost:8765/oauth2callback`）
+```bash
+cp env.example .env
+# 编辑 .env，填 YOUTUBE_OAUTH_CLIENT_ID / SECRET / GEMINI_API_KEY
+npm run oauth               # 一次性浏览器授权（端口 :8765）
+npm run smoke               # 验证：列出我的频道
+npm run start
+```
 
-完成后你才能跑 `npm run oauth` 拿到自己的 `credentials/token.json`。
-**不要**复制别人的 token.json 来用——那等于拿到别人 YouTube 账号的写权限。
+Windows 双击 `run-oauth.bat` / `run-smoke.bat` / `run-server.bat`
+（里面已经替你设了 HTTP 代理为 127.0.0.1:9876，按需改）。
 
 ---
 
