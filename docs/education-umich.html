@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>密歇根大学 · 刘益恺</title>
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="site.css" />
+</head>
+<body class="burst">
+  <div class="atmosphere" aria-hidden="true"></div>
+  <div class="grid-trace" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <header class="mast mast--site">
+      <div class="mast-left">
+        <div class="mast-identity">
+          <img class="mast-identity__photo" src="images/hero-portrait.jpg" width="64" height="64" alt="" />
+          <div>
+            <a href="index.html" class="mast-identity__name js-home-back">刘益恺 · YIKAI LIU</a>
+            <p class="mast-identity__role">密歇根大学 · 公卫与运动营养双硕士</p>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="主导航">
+        <a href="index.html" class="js-home-back">返回首页</a>
+      </nav>
+    </header>
+
+    <div class="page-lead js-reveal edu-school-head">
+      <p class="breadcrumb"><a href="index.html" class="js-home-back">首页</a> / 密歇根大学</p>
+      <div class="edu-school-head__row">
+        <img class="edu-school-head__logo" src="images/edu-umich-logo.jpg" width="80" height="80" alt="密歇根大学校标" />
+        <div>
+          <h1>密歇根大学</h1>
+          <p>公共卫生硕士，营养科学方向；运动营养学硕士，侧重身体活动与营养，<strong>2025 年 5 月</strong>取得双学位。</p>
+        </div>
+      </div>
+    </div>
+
+    <figure class="media-doc js-reveal">
+      <img src="images/about-header.jpg" alt="密歇根大学学位证书" />
+    </figure>
+
+    <section class="js-reveal">
+      <h2 class="section-title" style="margin-bottom:1rem">在校期间具体做了什么</h2>
+      <ul class="edu-detail-list" style="margin:0;padding-left:1.2rem;color:var(--ink-muted);line-height:1.75;font-size:0.98rem">
+        <li><strong>临床与运动营养师兼研究员</strong>：为 <strong>40 名</strong> NCAA 一级运动员提供个体化营养咨询，结合 InBody、训练负荷与专项需求；面向橄榄球队开展营养教育与团体培训。</li>
+        <li><strong>临床场景</strong>：医院与长期护理中 <strong>100+</strong> 名患者的营养评估与干预；心脏病、肾病、外科及肠内营养等；使用 Epic、PointClickCare 完成记录与随访。</li>
+        <li><strong>校园餐饮</strong>：参与面向 <strong>2000+</strong> 名学生的餐饮服务设计与运营优化，统筹营养、口味、成本与多元文化需求。</li>
+        <li><strong>科研与表达</strong>：代表课题组参与北美高校全英文学术路演与高强度 Q&amp;A。</li>
+        <li><strong>Wellness &amp; Weight Management 学生社团，简称 W&amp;W</strong>：<strong>2024 年 8 月</strong>起任创办人兼社长。完成章程、协议与免责声明等注册材料；带领 8–10 人核心团队服务会员；组织每周或隔周小团课训练、烹饪示范、营养与周期化训练工作坊及户外活动；在健身房做动作指导与保护；为参与者制定并监督营养与运动计划。</li>
+      </ul>
+    </section>
+
+    <p class="js-reveal" style="margin-top:2rem;font-size:0.85rem;color:var(--ink-faint)">← <a href="index.html" class="js-home-back">返回首页</a></p>
+  </div>
+  <div class="version-fab" data-version-fab>
+    <button type="button" class="version-fab__btn" aria-expanded="false" aria-controls="version-panel-um">投递版本</button>
+    <div id="version-panel-um" class="version-fab__panel" hidden>
+      <p>首页三档</p>
+      <a href="index.html">通用版</a>
+      <a href="index-clinical.html">临床加强</a>
+      <a href="index-ai.html">AI 产品加强</a>
+    </div>
+  </div>
+
+  <script src="site-ui.js"></script>
+  <script>
+    (function(){document.querySelectorAll(".js-reveal").forEach(function(n){
+      n.classList.add("is-visible");
+    });})();
+  </script>
+</body>
+</html>

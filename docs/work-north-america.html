@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>北美临床与大众健康社团 · 刘益恺</title>
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="site.css" />
+</head>
+<body class="burst">
+  <div class="atmosphere" aria-hidden="true"></div>
+  <div class="grid-trace" aria-hidden="true"></div>
+
+  <div class="wrap work-detail__lead">
+    <header class="mast mast--site">
+      <div class="mast-left">
+        <div class="mast-identity">
+          <img class="mast-identity__photo" src="images/hero-portrait.jpg" width="64" height="64" alt="" />
+          <div>
+            <a href="index.html" class="mast-identity__name js-home-back">刘益恺 · YIKAI LIU</a>
+            <p class="mast-identity__role">临床与运动营养 · 密歇根</p>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="主导航">
+        <a href="index.html" class="js-home-back">返回首页</a>
+      </nav>
+    </header>
+
+    <p class="breadcrumb js-reveal"><a href="index.html" class="js-home-back">首页</a> / 北美临床与大众健康社团</p>
+    <h1 class="js-reveal">「约 1 年」北美临床与大众健康社团经历</h1>
+    <p class="js-reveal" style="color:var(--ink-muted);line-height:1.65">本页对应简历中的<strong>Clinical Dietitian &amp; Researcher · Corewell Health &amp; UMich（约 2022 年 9 月—2025 年 4 月）</strong>：在美国区域性医疗体系与密歇根大学相关临床、校队与科研场景中，执行医学营养治疗（MNT）、服务 NCAA 一级运动员，并参与数据驱动的营养研究；同时在校内创办并带领 <strong>W&amp;W（Wellness and Weight Management）</strong> 学生体重管理社团，面向校园人群做周期化训练与科普。</p>
+
+    <section class="js-reveal work-detail__clinical-club" aria-label="临床与社团经历">
+      <div class="clinical-club-grid" aria-label="医院实习现场与社团合影">
+        <figure class="figure-pro clinical-club-grid__cell">
+          <img src="images/work-umich-clinical.jpg" alt="医院实习与临床相关现场（资料：医院实习照片）" loading="lazy" decoding="async" />
+        </figure>
+        <figure class="figure-pro clinical-club-grid__cell">
+          <img src="images/work-umich-ww-members.jpg" alt="W&amp;W 体重管理社团团队合影（资料：社团团队活动合影）" loading="lazy" decoding="async" />
+        </figure>
+      </div>
+
+      <h2 class="section-title" style="margin-top:1.75rem">临床1200小时</h2>
+      <ul class="work-detail__bullet-list">
+        <li>独立承担并完成<strong> 500+ </strong>例复杂病例的医学营养治疗（MNT），围绕 PCOS、代谢综合征等病理设计个体化干预与随访。</li>
+        <li>担任<strong> 50+ </strong>名 NCAA Division I 运动员的运动营养顾问；结合 DEXA/BOD POD 体成分数据与比赛微周期，制定宏量营养素周期化方案；面向橄榄球队等开展营养教育与团体培训。</li>
+        <li>在 <strong>RStudio</strong> 上对睡眠呼吸与血压等大规模生理数据做多变量回归，将临床遥测转化为可投稿、可宣讲的研究结论，并在全美营养学相关会议上报告。</li>
+        <li>临床信息系统与流程：<strong>Epic</strong>、<strong>PointClickCare</strong> 等工作流衔接；医院与长期照护场景中的记录、交接与多学科沟通。</li>
+      </ul>
+
+      <h2 class="section-title" style="margin-top:1.75rem">体重管理</h2>
+      <p class="work-detail__prose"><strong>W&amp;W（Wellness and Weight Management）</strong>：创办人兼社长；完成注册材料与免责声明；核心团队约 8–10 人。日常组织周期化训练、烹饪示范、营养主题工作坊与户外活动，面向在校学生做体重管理与可持续生活习惯的同伴支持，与临床课表和赛季节奏分开运营、互为补充。</p>
+    </section>
+
+    <p class="js-reveal" style="margin-top:2.5rem"><a href="index.html" class="js-home-back" style="font-weight:800;color:var(--accent-2)">← 返回首页</a></p>
+  </div>
+
+  <div class="version-fab" data-version-fab>
+    <button type="button" class="version-fab__btn" aria-expanded="false" aria-controls="version-panel-wna">投递版本</button>
+    <div id="version-panel-wna" class="version-fab__panel" hidden>
+      <p>首页三档</p>
+      <a href="index.html">通用版</a>
+      <a href="index-clinical.html">临床加强</a>
+      <a href="index-ai.html">AI 产品加强</a>
+    </div>
+  </div>
+
+  <script src="site-ui.js"></script>
+  <script>
+    (function () {
+      document.querySelectorAll(".js-reveal").forEach(function (n) { n.classList.add("is-visible"); });
+    })();
+  </script>
+</body>
+</html>

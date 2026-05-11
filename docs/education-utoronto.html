@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>多伦多大学 · 刘益恺</title>
+  <link rel="icon" href="images/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="site.css" />
+</head>
+<body class="burst">
+  <div class="atmosphere" aria-hidden="true"></div>
+  <div class="grid-trace" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <header class="mast mast--site">
+      <div class="mast-left">
+        <div class="mast-identity">
+          <img class="mast-identity__photo" src="images/hero-portrait.jpg" width="64" height="64" alt="" />
+          <div>
+            <a href="index.html" class="mast-identity__name js-home-back">刘益恺 · YIKAI LIU</a>
+            <p class="mast-identity__role">多伦多大学 · 运动科学学士</p>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="主导航">
+        <a href="index.html" class="js-home-back">返回首页</a>
+      </nav>
+    </header>
+
+    <div class="page-lead js-reveal">
+      <p class="breadcrumb"><a href="index.html" class="js-home-back">首页</a> / 多伦多大学</p>
+      <h1>多伦多大学</h1>
+      <p>运动科学理学学士，主修人体运动学与训练科学，<strong>2023 年 6 月</strong>毕业。下方为学士学位证书扫描，按原图比例展示。</p>
+    </div>
+
+    <figure class="media-doc js-reveal">
+      <img src="images/edu-uoft-degree.jpg" alt="多伦多大学理学学士学位证书，运动科学" />
+    </figure>
+
+    <section class="js-reveal">
+      <h2 class="section-title" style="margin-bottom:1rem">本科阶段重点</h2>
+      <ul style="margin:0;padding-left:1.2rem;color:var(--ink-muted);line-height:1.75;font-size:0.98rem">
+        <li>运动生理学、训练负荷与人体机能基础，为之后在密歇根的临床与运动营养训练打底。</li>
+        <li>与北美研究生与路演衔接：本科—密歇根双硕士形成连续的学术与表达训练。</li>
+      </ul>
+    </section>
+
+    <p class="js-reveal" style="margin-top:2rem;font-size:0.85rem;color:var(--ink-faint)">← <a href="index.html" class="js-home-back">返回首页</a></p>
+  </div>
+
+  <div class="version-fab" data-version-fab>
+    <button type="button" class="version-fab__btn" aria-expanded="false" aria-controls="version-panel-ut">投递版本</button>
+    <div id="version-panel-ut" class="version-fab__panel" hidden>
+      <p>首页三档</p>
+      <a href="index.html">通用版</a>
+      <a href="index-clinical.html">临床加强</a>
+      <a href="index-ai.html">AI 产品加强</a>
+    </div>
+  </div>
+
+  <script src="site-ui.js"></script>
+  <script>
+    (function(){document.querySelectorAll(".js-reveal").forEach(function(n){ n.classList.add("is-visible"); });})();
+  </script>
+</body>
+</html>

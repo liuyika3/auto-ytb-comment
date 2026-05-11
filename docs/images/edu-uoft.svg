@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="t">
+  <title id="t">University of Toronto style placeholder (not official logo)</title>
+  <rect width="128" height="128" rx="24" fill="#1c355e"/>
+  <circle cx="64" cy="64" r="40" fill="none" stroke="#ffffff" stroke-width="5" opacity="0.9"/>
+  <text x="64" y="76" text-anchor="middle" fill="#ffffff" font-family="Georgia,serif" font-size="28" font-weight="700">UofT</text>
+</svg>
